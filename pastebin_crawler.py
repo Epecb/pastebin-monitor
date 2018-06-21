@@ -27,6 +27,7 @@ def get_useragent():
 
 
 def get_timestamp():
+    """"""
     return time.strftime('%Y/%m/%d %H:%M:%S')
 
 def all_python_encodings():
@@ -125,6 +126,7 @@ def all_python_encodings():
 
 
 class Logger:
+    """"""
 
     shell_mod = {
         '':'',
@@ -141,6 +143,7 @@ class Logger:
     }
 
     def log ( self, message, is_bold=False, color='', log_time=True):
+        """"""
         prefix = ''
         suffix = ''
 
@@ -159,14 +162,17 @@ class Logger:
         sys.stdout.flush()
 
     def error(self, err):
+        """"""
         self.log(err, True, 'RED')
 
     def fatal_error(self, err):
+        """"""
         self.error(err)
         exit()
 
-class Crawler:
 
+class Crawler:
+    """"""
     PASTEBIN_URL = 'http://pastebin.com'
     PASTES_URL = PASTEBIN_URL + '/archive'
     REGEXES_FILE = 'regexes.txt'
@@ -180,6 +186,7 @@ class Crawler:
     new_checked_ids = []
 
     def read_regexes(self):
+        """"""""
         try:
             with open ( self.REGEXES_FILE, 'r') as f:
                 try:
@@ -201,10 +208,9 @@ class Crawler:
     def __init__(self):
         self.read_regexes()
 
-
-
-    def get_pastes ( self ):
-        Logger ().log ( 'Getting pastes', True )
+    def get_pastes(self):
+        """"""
+        Logger().log('Getting pastes', True)
         try:
             page = PyQuery(url=self.PASTES_URL,
                            headers={'user-agent': get_useragent()})
@@ -274,6 +280,7 @@ class Crawler:
         return False
 
     def save_result(self, paste_url, paste_id, file, directory, paste_txt):
+        """"""
         directory = self.PASTES_DIR + '/' + directory
         file = self.PASTES_DIR + '/' + file
         timestamp = get_timestamp()
@@ -295,7 +302,9 @@ class Crawler:
         with open(save_paste, mode='w') as paste:
             paste.write(paste_txt + '\n')
 
-    def start ( self, refresh_time = 30, delay = 1, ban_wait = 5, flush_after_x_refreshes=100, connection_timeout=60 ):
+    def start(self, refresh_time=30, delay=1, ban_wait=5,
+              flush_after_x_refreshes=100, connection_timeout=60):
+        """"""
         count = 0
         while True:
             status,pastes = self.get_pastes ()
@@ -335,6 +344,7 @@ class Crawler:
                 time.sleep(1)
 
 def parse_input():
+    """"""
     parser = OptionParser()
     parser.add_argument(
         '-r',
