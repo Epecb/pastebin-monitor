@@ -168,6 +168,7 @@ class Crawler:
     ACCESS_DENIED = -1
     CONNECTION_FAIL = -2
     OTHER_ERROR = -3
+    PASTES_DIR = 'archive'
 
     prev_checked_ids = []
     new_checked_ids = []
@@ -263,21 +264,27 @@ class Crawler:
         return False
 
     def save_result ( self, paste_url, paste_id, file, directory ):
+        directory = self.PASTES_DIR + '/' + directory
+        file = self.PASTES_DIR + '/' + file
         timestamp = get_timestamp()
-        with open ( file, 'a' ) as matching:
-            matching.write ( timestamp + ' - ' + paste_url + '\n' )
-
         try:
-            os.mkdir(directory)
+            os.makedirs(directory)
         except KeyboardInterrupt:
             raise
         except:
             pass
 
-        with open( directory + '/' + timestamp.replace('/','_').replace(':','_').replace(' ','__') + '_' + paste_id.replace('/','') + '.txt', mode='w' ) as paste:
             paste_txt = PyQuery(url=paste_url)('#paste_code').text()
-            paste.write(paste_txt + '\n')
+        with open(file, 'a') as matching:
+            matching.write(timestamp + ' - ' + paste_url + '\n')
 
+        save_paste = (
+            directory + '/' +
+            timestamp.replace('/', '_').replace(':', '_').replace(' ', '__') +
+            '_' + paste_id.replace('/', '') + '.txt'
+        )
+        with open(save_paste, mode='w') as paste:
+            paste.write(paste_txt + '\n')
 
     def start ( self, refresh_time = 30, delay = 1, ban_wait = 5, flush_after_x_refreshes=100, connection_timeout=60 ):
         count = 0
