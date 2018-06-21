@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+    A simple Pastebin crawler which looks for interesting things and saves
+    them to disk
+"""
 from math import ceil
-from optparse import OptionParser
+from argparse import ArgumentParser as OptionParser
 import os
 import re
 import time
@@ -308,13 +313,44 @@ class Crawler:
 
 def parse_input():
     parser = OptionParser()
-    parser.add_option('-r', '--refresh-time', help='Set the refresh time (default: 30)', dest='refresh_time', type='int', default=30)
-    parser.add_option('-d', '--delay-time', help='Set the delay time (default: 1)', dest='delay', type='float', default=1)
-    parser.add_option('-b', '--ban-wait-time', help='Set the ban wait time (default: 5)', dest='ban_wait', type='int', default=5)
-    parser.add_option('-f', '--flush-after-x-refreshes', help='Set the number of refreshes after which memory is flushed (default: 100)', dest='flush_after_x_refreshes', type='int', default=100)
-    parser.add_option('-c', '--connection-timeout', help='Set the connection timeout waiting time (default: 60)', dest='connection_timeout', type='float', default=60)
-    (options, args) = parser.parse_args()
-    return options.refresh_time, options.delay, options.ban_wait, options.flush_after_x_refreshes, options.connection_timeout
+    parser.add_argument(
+        '-r',
+        '--refresh-time',
+        help='Set the refresh time (default: 60)',
+        dest='refresh_time',
+        type=int,
+        default=30)
+    parser.add_argument(
+        '-d',
+        '--delay-time',
+        help='Set the delay time (default: 1)',
+        dest='delay',
+        type=float,
+        default=3)
+    parser.add_argument(
+        '-b',
+        '--ban-wait-time',
+        help='Set the ban wait time (default: 5)',
+        dest='ban_wait',
+        type=int,
+        default=5)
+    parser.add_argument(
+        '-f',
+        '--flush-after-x-refreshes',
+        help='Set the number of refreshes after which memory is flushed (default: 100)',
+        dest='flush_after_x_refreshes',
+        type=int,
+        default=100)
+    parser.add_argument(
+        '-c',
+        '--connection-timeout',
+        help='Set the connection timeout waiting time (default: 60)',
+        dest='connection_timeout',
+        type=float,
+        default=60)
+    options = parser.parse_args()
+    return (options.refresh_time, options.delay, options.ban_wait,
+            options.flush_after_x_refreshes, options.connection_timeout)
 
 
 try:
