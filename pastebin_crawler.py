@@ -251,10 +251,13 @@ class Crawler:
                                headers={'user-agent': get_useragent()})
             paste_txt = req.text
 
-            for regex,file,directory in self.regexes:
-                if re.match ( regex, paste_txt, re.IGNORECASE ):
-                    Logger ().log ( 'Found a matching paste: ' + paste_url + ' (' + file + ')', True, 'CYAN' )
-                    self.save_result ( paste_url,paste_id,file,directory )
+
+            for regex, file, directory in self.regexes:
+                if re.search(regex, paste_txt, re.IGNORECASE):
+                    Logger().log('Found a matching paste: ' +
+                                 paste_url + ' (' + file + ')', True, 'CYAN')
+                    self.save_result(paste_url, paste_id, file, directory,
+                                     paste_txt)
                     return True
             Logger ().log ( 'Not matching paste: ' + paste_url )
         except KeyboardInterrupt:
@@ -263,7 +266,7 @@ class Crawler:
             Logger ().log ( 'Error reading paste (probably a 404 or encoding issue).', True, 'YELLOW')
         return False
 
-    def save_result ( self, paste_url, paste_id, file, directory ):
+    def save_result(self, paste_url, paste_id, file, directory, paste_txt):
         directory = self.PASTES_DIR + '/' + directory
         file = self.PASTES_DIR + '/' + file
         timestamp = get_timestamp()
@@ -274,7 +277,6 @@ class Crawler:
         except:
             pass
 
-            paste_txt = PyQuery(url=paste_url)('#paste_code').text()
         with open(file, 'a') as matching:
             matching.write(timestamp + ' - ' + paste_url + '\n')
 
