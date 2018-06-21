@@ -15,6 +15,12 @@ import requests
 from pyquery import PyQuery
 
 
+def show_paste(paste_txt):
+    """ paste Feed """
+    Logger().log(message=paste_txt[0:256], is_bold=False, color='YELLOW',
+                 log_time=False)
+
+
 def get_useragent():
     """ Return user-agent """
     return 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) Gecko/20100101 Firefox/52.0'
@@ -251,6 +257,7 @@ class Crawler:
                                headers={'user-agent': get_useragent()})
             paste_txt = req.text
 
+            show_paste(paste_txt)
 
             for regex, file, directory in self.regexes:
                 if re.search(regex, paste_txt, re.IGNORECASE):
