@@ -10,10 +10,14 @@ import os
 import re
 import time
 import sys
-import urllib
-import urllib.request
+import requests
 
 from pyquery import PyQuery
+
+
+def get_useragent():
+    """ Return user-agent """
+    return 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) Gecko/20100101 Firefox/52.0'
 
 
 def get_timestamp():
@@ -195,7 +199,8 @@ class Crawler:
     def get_pastes ( self ):
         Logger ().log ( 'Getting pastes', True )
         try:
-            page = PyQuery ( url = self.PASTES_URL )
+            page = PyQuery(url=self.PASTES_URL,
+                           headers={'user-agent': get_useragent()})
         except KeyboardInterrupt:
             raise
         except:
@@ -226,9 +231,9 @@ class Crawler:
             if not worked:
                 # One last try...
                 try:
-                    f = urllib.request.urlopen(Crawler.PASTES_URL)
-                    page_html = PyQuery(str(f.read()).encode('utf8')).html()
-                    f.close()
+                    req = requests.get(self.PASTES_URL,
+                                       headers={'user-agent': get_useragent()})
+                    page_html = PyQuery(req.text).html()
                 except KeyboardInterrupt:
                     raise
                 except:
@@ -238,10 +243,12 @@ class Crawler:
         else:
             return self.OK,page('.maintable img').next('a')
 
-    def check_paste ( self, paste_id ):
-        paste_url = self.PASTEBIN_URL + paste_id
+    def check_paste(self, paste_id):
+        paste_url = self.PASTEBIN_URL + "/raw" + paste_id
         try:
-            paste_txt = PyQuery ( url = paste_url )('#paste_code').text()
+            req = requests.get(paste_url,
+                               headers={'user-agent': get_useragent()})
+            paste_txt = req.text
 
             for regex,file,directory in self.regexes:
                 if re.match ( regex, paste_txt, re.IGNORECASE ):
