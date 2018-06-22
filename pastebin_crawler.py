@@ -14,10 +14,22 @@ import magic
 from pyquery import PyQuery
 
 
+def get_printable_size(byte_size):
+    """Convert byte to KB MB GB."""
+    for i in [' B', ' KB', ' MB', ' GB']:
+        if byte_size < 1024.0:
+            if i == ' B':
+                return '%0.0f%s' % (byte_size, i)
+            return '%0.1f%s' % (byte_size, i)
+        byte_size /= 1024.0
+    return '%0.1f%s' % (byte_size, 'TB')
+
+
 def show_paste(paste_txt):
     """paste Feed."""
-    Logger().log(message=magic.from_buffer(
-        paste_txt[0:1024]), is_bold=False, color='BLUE', log_time=False)
+    message = magic.from_buffer(
+        paste_txt[0:1024]) + ' [' + get_printable_size(len(paste_txt)) + ']'
+    Logger().log(message=message, is_bold=False, color='BLUE', log_time=False)
     Logger().log(message=paste_txt[0:256],
                  is_bold=False, color='YELLOW', log_time=False)
 
