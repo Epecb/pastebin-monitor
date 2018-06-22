@@ -271,7 +271,7 @@ class Crawler:
             show_paste(paste_txt)
 
             for regex, file, directory in self.regexes:
-                if re.search(regex, paste_txt, re.IGNORECASE):
+                if re.search(regex, paste_txt[0:1024], re.IGNORECASE):
                     Logger().log('Found a matching paste: ' +
                                  paste_url + ' (' + file + ')', True, 'CYAN')
                     self.save_result(paste_url, paste_id, file, directory,
