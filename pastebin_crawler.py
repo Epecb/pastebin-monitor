@@ -9,14 +9,17 @@ import re
 import time
 import sys
 import requests
+import magic
 
 from pyquery import PyQuery
 
 
 def show_paste(paste_txt):
     """paste Feed."""
-    Logger().log(message=paste_txt[0:256], is_bold=False, color='YELLOW',
-                 log_time=False)
+    Logger().log(message=magic.from_buffer(
+        paste_txt[0:1024]), is_bold=False, color='BLUE', log_time=False)
+    Logger().log(message=paste_txt[0:256],
+                 is_bold=False, color='YELLOW', log_time=False)
 
 
 def get_useragent():
