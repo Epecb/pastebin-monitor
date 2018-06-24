@@ -8,10 +8,24 @@ import os
 import re
 import time
 import sys
+import tty
+import termios
 import requests
 import magic
 
 from pyquery import PyQuery
+
+
+def getchar():
+    """Returns a single character from standard input."""
+    stdin_fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(stdin_fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        input_ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_settings)
+    return input_ch
 
 
 def get_printable_size(byte_size):
@@ -199,6 +213,7 @@ class Crawler:
 
     prev_checked_ids = []
     new_checked_ids = []
+    pastes_for_save = []
 
     def read_regexes(self):
         """"""
@@ -293,6 +308,7 @@ class Crawler:
                                      paste_txt)
                     return True
             Logger().log('Not matching paste: ' + paste_url)
+            self.pastes_for_save.append({paste_id: paste_txt})
         except KeyboardInterrupt:
             raise
         except BaseException:
@@ -322,22 +338,46 @@ class Crawler:
         with open(save_paste, mode='w') as paste:
             paste.write(paste_txt + '\n')
 
+    def save_last_pastes(self,):
+        """Save last pastes."""
+        paste_url = ''
+        for i in self.pastes_for_save:
+            paste_id = next(iter(i))
+            directory = 'saves'
+            paste_txt = i[paste_id]
+            file = 'saves.txt'
+            self.save_result(paste_url, paste_id, file, directory, paste_txt)
+        del self.pastes_for_save[:]
+
     def start(self, refresh_time=30, delay=1, ban_wait=5,
               flush_after_x_refreshes=100, connection_timeout=60):
-        """"""
+        """Start crawling."""
         count = 0
         while True:
             status, pastes = self.get_pastes()
+            del self.pastes_for_save[:]
 
             start_time = time.time()
             if status == self.OK:
                 for paste in pastes:
-                    paste_id = PyQuery(paste).attr('href')
-                    self.new_checked_ids.append(paste_id)
-                    if paste_id not in self.prev_checked_ids:
-                        self.check_paste(paste_id)
-                        time.sleep(delay)
-                    count += 1
+                    try:
+                        paste_id = PyQuery(paste).attr('href')
+                        self.new_checked_ids.append(paste_id)
+                        if paste_id not in self.prev_checked_ids:
+                            self.check_paste(paste_id)
+                            time.sleep(delay)
+                        count += 1
+                    except KeyboardInterrupt:
+                        Logger().log(
+                            message='\nQuit/Save(last {:d} pastes)[q/s]:'.
+                            format(len(self.pastes_for_save)),
+                            is_bold=False,
+                            color='RED', log_time=False)
+                        user_choice = getchar()
+                        if user_choice in 'sS':
+                            self.save_last_pastes()
+                        if user_choice in 'qQ':
+                            raise
 
                 if count == flush_after_x_refreshes:
                     self.prev_checked_ids = self.new_checked_ids
