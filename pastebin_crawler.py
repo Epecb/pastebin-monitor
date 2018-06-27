@@ -303,7 +303,8 @@ class Crawler:
                                headers={'user-agent': get_useragent()})
             paste_txt = req.text
 
-            self.show_paste(paste_txt)
+            if not self.verbose:
+                self.show_paste(paste_txt)
 
             for regex, file, directory in self.regexes:
                 if re.search(regex, paste_txt[0:1024], re.IGNORECASE):
@@ -357,8 +358,10 @@ class Crawler:
         del self.pastes_for_save[:]
 
     def start(self, refresh_time=30, delay=1, ban_wait=5,
-              flush_after_x_refreshes=100, connection_timeout=60):
+              flush_after_x_refreshes=100, connection_timeout=60,
+              silent=False):
         """Start crawling."""
+        self.verbose = silent
         count = 0
         while True:
             status, pastes = self.get_pastes()
@@ -376,13 +379,16 @@ class Crawler:
                         count += 1
                     except KeyboardInterrupt:
                         Logger().log(
-                            message='\nQuit/Save(last {:d} pastes)[q/s]:'.
+                            message=('\nQuit/Verbose/Save'
+                                     '(last {:d} pastes)[q/v/s]:').
                             format(len(self.pastes_for_save)),
                             is_bold=False,
                             color='RED', log_time=False)
                         user_choice = get_char()
                         if user_choice in 'sS':
                             self.save_last_pastes()
+                        if user_choice in 'vV':
+                            self.verbose = not self.verbose
                         if user_choice in 'qQ':
                             raise
 
@@ -464,9 +470,17 @@ def parse_input():
         dest='connection_timeout',
         type=float,
         default=60)
+    parser.add_argument(
+        '-s',
+        '--silent',
+        help='Silent mode. Log only.',
+        dest='silent',
+        action='store_true'
+        )
     options = parser.parse_args()
     return (options.refresh_time, options.delay, options.ban_wait,
-            options.flush_after_x_refreshes, options.connection_timeout)
+            options.flush_after_x_refreshes, options.connection_timeout,
+            options.silent)
 
 
 try:
