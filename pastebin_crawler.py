@@ -27,26 +27,6 @@ def get_char():
     return input_ch
 
 
-def get_printable_size(byte_size):
-    """Convert byte to KB MB GB."""
-    for i in [' B', ' KB', ' MB', ' GB']:
-        if byte_size < 1024.0:
-            if i == ' B':
-                return '%0.0f%s' % (byte_size, i)
-            return '%0.1f%s' % (byte_size, i)
-        byte_size /= 1024.0
-    return '%0.1f%s' % (byte_size, 'TB')
-
-
-def show_paste(paste_txt):
-    """paste Feed."""
-    message = magic.from_buffer(
-        paste_txt[0:1024]) + ' [' + get_printable_size(len(paste_txt)) + ']'
-    Logger().log(message=message, is_bold=False, color='BLUE', log_time=False)
-    Logger().log(message=paste_txt[0:256],
-                 is_bold=False, color='YELLOW', log_time=False)
-
-
 def get_useragent():
     """Return user-agent."""
     return 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) Gecko/20100101 Firefox/52.0'
@@ -245,6 +225,26 @@ class Crawler:
     def __init__(self):
         self.read_regexes()
 
+    @staticmethod
+    def show_paste(paste_txt):
+        """paste Feed."""
+        def get_printable_size(byte_size):
+            """Convert byte to KB MB GB."""
+            for i in [' B', ' KB', ' MB', ' GB']:
+                if byte_size < 1024.0:
+                    if i == ' B':
+                        return '%0.0f%s' % (byte_size, i)
+                    return '%0.1f%s' % (byte_size, i)
+                byte_size /= 1024.0
+            return '%0.1f%s' % (byte_size, 'TB')
+        message = (magic.from_buffer(paste_txt[0:1024]) +
+                   ' [' + get_printable_size(len(paste_txt)) + ']')
+        Logger().log(
+            message=message, is_bold=False, color='BLUE',
+            log_time=False)
+        Logger().log(message=paste_txt[0:256],
+                     is_bold=False, color='YELLOW', log_time=False)
+
     def get_pastes(self):
         """"""
         Logger().log('Getting pastes', True)
@@ -303,7 +303,7 @@ class Crawler:
                                headers={'user-agent': get_useragent()})
             paste_txt = req.text
 
-            show_paste(paste_txt)
+            self.show_paste(paste_txt)
 
             for regex, file, directory in self.regexes:
                 if re.search(regex, paste_txt[0:1024], re.IGNORECASE):
