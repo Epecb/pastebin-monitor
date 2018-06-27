@@ -15,7 +15,7 @@ import magic
 from pyquery import PyQuery
 
 
-def getchar():
+def get_char():
     """Returns a single character from standard input."""
     stdin_fd = sys.stdin.fileno()
     old_settings = termios.tcgetattr(stdin_fd)
@@ -380,7 +380,7 @@ class Crawler:
                             format(len(self.pastes_for_save)),
                             is_bold=False,
                             color='RED', log_time=False)
-                        user_choice = getchar()
+                        user_choice = get_char()
                         if user_choice in 'sS':
                             self.save_last_pastes()
                         if user_choice in 'qQ':
