@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """A simple Pastebin crawler which looks for interesting things and saves them
 to disk."""
 from math import ceil
@@ -54,12 +53,12 @@ def get_useragent():
 
 
 def get_timestamp():
-    """"""
+    """Return time stamp"""
     return time.strftime('%Y/%m/%d %H:%M:%S')
 
 
 def all_python_encodings():
-    """"""
+    """Return encodings list."""
     return ['ascii',
             'big5',
             'big5hkscs',
@@ -201,7 +200,7 @@ class Logger:
 
 
 class Crawler:
-    """"""
+    """Pastebin.com crawler."""
     PASTEBIN_URL = 'http://pastebin.com'
     PASTES_URL = PASTEBIN_URL + '/archive'
     REGEXES_FILE = 'regexes.txt'
@@ -214,14 +213,17 @@ class Crawler:
     prev_checked_ids = []
     new_checked_ids = []
     pastes_for_save = []
+    verbose = False
 
     def read_regexes(self):
-        """"""
+        """Load regexes from regexes.txt."""
         try:
             with open(self.REGEXES_FILE, 'r') as regexes_file:
                 try:
-                    self.regexes = [[field.strip() for field in line.split(
-                        ',')] for line in regexes_file.readlines() if line.strip() != '' and not line.startswith('#')]
+                    self.regexes = (
+                        [[field.strip() for field in line.split(',')]
+                         for line in regexes_file.readlines()
+                         if line.strip() != '' and not line.startswith('#')])
 
                     # In case commas exist in the regexes...merge everything.
                     for i in range(len(self.regexes)):
@@ -231,7 +233,9 @@ class Crawler:
                     raise
                 except BaseException:
                     Logger().fatal_error(
-                        'Malformed regexes file. Format: regex_pattern,URL logging file, directory logging file.')
+                        'Malformed regexes file. Format:'
+                        ' regex_pattern,URL logging file,'
+                        ' directory logging file.')
         except KeyboardInterrupt:
             raise
         except BaseException:
@@ -292,6 +296,7 @@ class Crawler:
             return self.OK, page('.maintable img').next('a')
 
     def check_paste(self, paste_id):
+        """"""
         paste_url = self.PASTEBIN_URL + '/raw' + paste_id
         try:
             req = requests.get(paste_url,
@@ -312,11 +317,13 @@ class Crawler:
         except KeyboardInterrupt:
             raise
         except BaseException:
-            Logger().log('Error reading paste (probably a 404 or encoding issue).', True, 'YELLOW')
+            Logger().log(
+                'Error reading paste (probably a 404 or encoding issue).',
+                True, 'YELLOW')
         return False
 
     def save_result(self, paste_url, paste_id, file, directory, paste_txt):
-        """"""
+        """Save paste to hdd."""
         directory = self.PASTES_DIR + '/' + directory
         file = self.PASTES_DIR + '/' + file
         timestamp = get_timestamp()
@@ -390,30 +397,36 @@ class Crawler:
                 sleep_time = ceil(max(0, (refresh_time - elapsed_time)))
                 if sleep_time > 0:
                     Logger().log(
-                        'Waiting {:d} seconds to refresh...'.format(sleep_time), True)
+                        'Waiting {:d} seconds to refresh...'.
+                        format(sleep_time),
+                        True)
                     time.sleep(sleep_time)
             elif status == self.ACCESS_DENIED:
                 Logger().log(
-                    'Damn! It looks like you have been banned (probably temporarily)',
-                    True,
-                    'YELLOW')
+                    'Damn! It looks like you have been'
+                    ' banned (probably temporarily)',
+                    True, 'YELLOW')
                 for i in range(0, ban_wait):
                     Logger().log('Please wait ' + str(ban_wait - i) +
                                  ' minute' +
                                  ('s' if (ban_wait - i) > 1 else ''))
                     time.sleep(60)
             elif status == self.CONNECTION_FAIL:
-                Logger().log('Connection down. Waiting {:d} seconds and trying again'.format(
-                    connection_timeout), True, 'RED')
+                Logger().log(
+                    'Connection down. Waiting {:d} seconds and trying again'.
+                    format(connection_timeout), True,
+                    'RED')
                 time.sleep(connection_timeout)
             elif status == self.OTHER_ERROR:
-                Logger().log('Unknown error. Maybe an encoding problem? Trying again in {:d} seconds .'.format(
-                    connection_timeout), True, 'RED')
+                Logger().log(
+                    'Unknown error. Maybe an encoding problem?'
+                    ' Trying again in {:d} seconds .'.
+                    format(connection_timeout), True, 'RED')
                 time.sleep(1)
 
 
 def parse_input():
-    """"""
+    """Prepare ARGS for Crawler.start"""
     parser = OptionParser()
     parser.add_argument(
         '-r',
@@ -439,7 +452,8 @@ def parse_input():
     parser.add_argument(
         '-f',
         '--flush-after-x-refreshes',
-        help='Set the number of refreshes after which memory is flushed (default: 100)',
+        help=('Set the number of refreshes after'
+              ' which memory is flushed (default: 100)'),
         dest='flush_after_x_refreshes',
         type=int,
         default=100)
